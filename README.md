@@ -1,6 +1,6 @@
-# CIVOPS Radar
+# Racoon
 
-CIVOPS Radar is a Python-based tool for detecting and tracking Wi-Fi devices using packet sniffing. It provides a real-time web interface to visualize detected devices, their signal strength (RSSI), and estimated distance.
+Racoon is a Python-based tool for detecting and tracking Wi-Fi devices using packet sniffing. It provides a real-time web interface to visualize detected devices, their signal strength (RSSI), and estimated distance.
 
 ## Features
 

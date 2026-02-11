@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CIVOPS Recon Radar</title>
+    <style>
+        body {
+            background-color: #050b14;
+            color: #00ffcc;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin: 0;
+            padding: 20px;
+            overflow: hidden;
+        }
+
+        h2 {
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        /* Estilo do Radar (Concentric Circles) */
+        #radar-container {
+            position: relative;
+            width: 350px;
+            height: 350px;
+            border-radius: 50%;
+            border: 2px solid #00ffcc;
+            background:
+                radial-gradient(circle, transparent 20%, #00ffcc 21%, transparent 22%),
+                radial-gradient(circle, transparent 40%, #00ffcc 41%, transparent 42%),
+                radial-gradient(circle, transparent 60%, #00ffcc 61%, transparent 62%),
+                radial-gradient(circle, transparent 80%, #00ffcc 81%, transparent 82%);
+            box-shadow: 0 0 20px rgba(0, 255, 204, 0.2) inset;
+            margin-top: 20px;
+        }
+
+        /* Linhas cruzadas no centro */
+        #radar-container::before,
+        #radar-container::after {
+            content: '';
+            position: absolute;
+            background: rgba(0, 255, 204, 0.5);
+        }
+
+        #radar-container::before {
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            width: 1px;
+        }
+
+        #radar-container::after {
+            left: 0;
+            right: 0;
+            top: 50%;
+            height: 1px;
+        }
+
+        /* Estilo dos Alvos (Blips) */
+        .blip {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background-color: #ff3366;
+            border-radius: 50%;
+            transform: translate(-50%, -50%);
+            box-shadow: 0 0 10px #ff3366;
+            transition: all 0.5s ease-out;
+            /* Suaviza o movimento */
+        }
+
+        .label {
+            position: absolute;
+            color: #fff;
+            font-size: 10px;
+            top: 10px;
+            left: 10px;
+            text-shadow: 1px 1px 2px #000;
+            white-space: nowrap;
+        }
+
+        #intel-log {
+            margin-top: 30px;
+            width: 100%;
+            max-width: 400px;
+            border: 1px solid #00ffcc;
+            padding: 10px;
+            height: 150px;
+            overflow-y: auto;
+            font-size: 12px;
+            background: rgba(0, 255, 204, 0.05);
+        }
+    </style>
+</head>
+
+<body>
+
+    <h2>CIVOPS: Intel Radar</h2>
+    <div id="radar-container"></div>
+
+    <div id="intel-log">
+        <strong>[LOG DE SINAIS]</strong><br>
+        <span id="log-content">Aguardando dados...</span>
+    </div>
+
+    <script>
+        const radarSize = 350;
+        const maxRangeMeters = 50; // O alcance máximo visualizado no radar
+        const angles = {}; // Armazena o ângulo designado para cada MAC
+
+        async function fetchRadarData() {
+            try {
+                const response = await fetch('/api/targets');
+                const targets = await response.json();
+                updateRadar(targets);
+                updateLog(targets);
+            } catch (error) {
+                console.error("Erro ao buscar dados da API:", error);
+            }
+        }
+
+        function updateRadar(targets) {
+            const radar = document.getElementById('radar-container');
+            radar.innerHTML = ''; // Limpa o frame anterior
+
+            targets.forEach(target => {
+                // Se o dispositivo é novo, designa um ângulo aleatório (0 a 360)
+                if (!angles[target.mac]) {
+                    angles[target.mac] = Math.random() * 360;
+                }
+                const angle = angles[target.mac];
+
+                // Limita a distância máxima para que o ponto não saia do círculo HTML
+                let distance = target.distance > maxRangeMeters ? maxRangeMeters : target.distance;
+
+                // Mapeia a distância (metros) para o raio (pixels)
+                let radius = (distance / maxRangeMeters) * (radarSize / 2);
+
+                // Converte coordenadas Polares (Raio, Ângulo) para Cartesianas (X, Y)
+                let x = (radarSize / 2) + radius * Math.cos(angle * Math.PI / 180);
+                let y = (radarSize / 2) + radius * Math.sin(angle * Math.PI / 180);
+
+                // Cria o elemento visual do ponto
+                let blip = document.createElement('div');
+                blip.className = 'blip';
+                blip.style.left = x + 'px';
+                blip.style.top = y + 'px';
+
+                // Cria a etiqueta (Apenas os últimos 4 caracteres do MAC + Distância)
+                let shortMac = target.mac.substring(11);
+                let label = document.createElement('div');
+                label.className = 'label';
+                label.innerText = `${shortMac} (${target.distance}m)`;
+
+                blip.appendChild(label);
+                radar.appendChild(blip);
+            });
+        }
+
+        function updateLog(targets) {
+            const logContent = document.getElementById('log-content');
+            let text = '';
+            targets.forEach(t => {
+                text += `> [${t.mac}] Sinal: ${t.rssi}dBm | Dist: ${t.distance}m<br>`;
+            });
+            logContent.innerHTML = text || 'Nenhum sinal detectado.';
+        }
+
+        // Loop de polling: Busca novos dados a cada 1 segundo (1000ms)
+        setInterval(fetchRadarData, 1000);
+    </script>
+</body>
+
+</html>

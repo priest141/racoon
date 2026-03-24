@@ -7,18 +7,7 @@ Racoon is a Python-based tool for detecting and tracking Wi-Fi and BLE devices u
 - **Real-time Detection**: Captures Wi-Fi Probe Requests and Beacons to identify devices.
 - **Distance Estimation**: Calculates approximate distance based on RSSI values using the Log-Distance Path Loss model.
 - **Web Interface**: A cyber-themed HUD for visualizing targets in a radar view.
-- **Clean Architecture**: Built with modularity and testability in mind, following SOLID principles.
 - **Mock Mode**: Simulates device detection for development and testing without needing specific hardware.
-
-## Architecture
-
-The project follows **Clean Architecture** principles to ensure separation of concerns:
-
-- **Domain Layer (`radar/domain`)**: Contains the core business logic and entities (e.g., `Target` model).
-- **Application Layer (`radar/application`)**: Orchestrates the application flow (e.g., `TargetService`).
-- **Interfaces Layer (`radar/interfaces`)**: Defines abstract contracts (e.g., `Scanner`).
-- **Infrastructure Layer (`radar/infrastructure`)**: Implements interfaces with specific technologies (e.g., `ScapyScanner`).
-- **API Layer (`radar/api`)**: Handles external communication via a Flask web server.
 
 ## Installation
 
@@ -31,8 +20,8 @@ The project follows **Clean Architecture** principles to ensure separation of co
 
 1.  **Clone the repository:**
     ```bash
-    git clone https://github.com/yourusername/civops-radar.git
-    cd civops-radar
+    git clone https://github.com/yourusername/racoon.git
+    cd racoon
     ```
 
 2.  **Install dependencies:**
